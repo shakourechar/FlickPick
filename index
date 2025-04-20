@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>🍿𝔽𝕝𝕚𝕔𝕜ℙ𝕚𝕔𝕜</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    /* Dark theme base */
+    body {
+      font-family: system-ui, sans-serif;
+      padding: 2rem;
+      max-width: 800px;
+      margin: auto;
+      background-color: #121212;
+      color: #e0e0e0;
+    }
+    /* Page title */
+    h1 {
+      font-size: 16px;
+      color: #ffffff;
+      margin-bottom: 1rem;
+    }
+    /* JSON display */
+    pre {
+      background: #1e1e1e;
+      padding: 1rem;
+      border: 1px solid #333;
+      overflow-x: auto;
+      font-size: 0.9rem;
+      color: #e0e0e0;
+    }
+    /* Download button */
+    button {
+      margin-top: 1rem;
+      padding: 0.8rem 1.5rem;
+      font-size: 1rem;
+      border: none;
+      border-radius: 5px;
+      background: #bb86fc;
+      color: #121212;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #985eff;
+    }
+    /* Notice box */
+    .notice {
+      background: #333;
+      border: 1px solid #444;
+      padding: 0.75rem;
+      margin-bottom: 1rem;
+      border-radius: 4px;
+      color: #e0e0e0;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🍿𝔽𝕝𝕚𝕔𝕜ℙ𝕚𝕔𝕜</h1>
+  <div class="notice">
+    <strong>Heads up!</strong> You can copy your profile below or download it directly.
+  </div>
+
+  <pre id="profileDisplay">{ loading... }</pre>
+  <button onclick="downloadProfile()">⬇️ Download FlickPick_Profile.json</button>
+
+  <script>
+    let formattedJson = "{}";
+
+    function getQueryParam(name) {
+      return new URLSearchParams(window.location.search).get(name);
+    }
+
+    function downloadProfile() {
+      const blob = new Blob([formattedJson], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "FlickPick_Profile.json";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    (function init() {
+      const raw = getQueryParam("data");
+      if (!raw) {
+        document.getElementById("profileDisplay").textContent =
+          "⚠️ No profile data found in the URL.";
+        return;
+      }
+
+      try {
+        const obj = JSON.parse(decodeURIComponent(raw));
+        formattedJson = JSON.stringify(obj, null, 2);
+        document.getElementById("profileDisplay").textContent = formattedJson;
+      } catch (e) {
+        document.getElementById("profileDisplay").textContent =
+          "⚠️ Failed to parse JSON: " + e.message;
+      }
+    })();
+  </script>
+
+</body>
+</html>
