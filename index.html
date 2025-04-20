@@ -3,35 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <title>🍿𝔽𝕝𝕚𝕔𝕜ℙ𝕚𝕔𝕜</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
-    /* Dark theme base */
     body {
       font-family: system-ui, sans-serif;
+      background: #121212;
+      color: #e0e0e0;
       padding: 2rem;
-      max-width: 800px;
+      max-width: 600px;
       margin: auto;
-      background-color: #121212;
-      color: #e0e0e0;
+      text-align: center;
     }
-    /* Page title */
     h1 {
-      font-size: 24px;
+      font-size: 2rem;
       color: #ffffff;
-      margin-bottom: 1rem;
+      margin-bottom: 1.5rem;
     }
-    /* JSON display */
-    pre {
-      background: #1e1e1e;
-      padding: 1rem;
-      border: 1px solid #333;
-      overflow-x: auto;
-      font-size: 0.9rem;
-      color: #e0e0e0;
+    #message {
+      font-size: 1.1rem;
+      margin-bottom: 2rem;
     }
-    /* Download button */
     button {
-      margin-top: 1rem;
       padding: 0.8rem 1.5rem;
       font-size: 1rem;
       border: none;
@@ -40,66 +32,62 @@
       color: #121212;
       cursor: pointer;
     }
-    button:hover {
-      background: #985eff;
+    button:disabled {
+      background: #555;
+      cursor: not-allowed;
     }
-    /* Notice box */
-    .notice {
-      background: #333;
-      border: 1px solid #444;
-      padding: 0.75rem;
-      margin-bottom: 1rem;
-      border-radius: 4px;
-      color: #e0e0e0;
+    button:hover:not(:disabled) {
+      background: #985eff;
     }
   </style>
 </head>
 <body>
 
   <h1>🍿𝔽𝕝𝕚𝕔𝕜ℙ𝕚𝕔𝕜</h1>
-  <div class="notice">
-    <strong>Heads up!</strong> You can copy your profile below or download it directly.
-  </div>
-
-  <pre id="profileDisplay">{ loading... }</pre>
-  <button onclick="downloadProfile()">⬇️ Download Profile</button>
+  <div id="message">Loading…</div>
+  <button id="downloadBtn">⬇️ Download Profile</button>
 
   <script>
-    let formattedJson = "{}";
+    const msgEl = document.getElementById("message");
+    const btn    = document.getElementById("downloadBtn");
 
-    function getQueryParam(name) {
-      return new URLSearchParams(window.location.search).get(name);
+    // Pull only the `data` parameter
+    const raw = new URLSearchParams(window.location.search).get("data");
+    let profileObj = null;
+
+    if (!raw) {
+      msgEl.textContent = "⚠️ No profile data found in the URL.";
+      btn.disabled = true;
+    } else {
+      try {
+        profileObj = JSON.parse(decodeURIComponent(raw));
+        // Try to get a friendly name
+        const userName =
+          profileObj.userName ||
+          (profileObj.userInfo && profileObj.userInfo.name) ||
+          "there";
+        msgEl.textContent = `Hey ${userName}, your profile is ready!`;
+      } catch (e) {
+        msgEl.textContent = "⚠️ Failed to parse profile data.";
+        btn.disabled = true;
+      }
     }
 
-    function downloadProfile() {
-      const blob = new Blob([formattedJson], { type: "application/json" });
+    btn.addEventListener("click", () => {
+      if (!profileObj) return;
+      const blob = new Blob(
+        [JSON.stringify(profileObj, null, 2)],
+        { type: "application/json" }
+      );
       const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
+      const a   = document.createElement("a");
       a.href = url;
       a.download = "FlickPick_Profile.json";
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-    }
-
-    (function init() {
-      const raw = getQueryParam("data");
-      if (!raw) {
-        document.getElementById("profileDisplay").textContent =
-          "⚠️ No profile data found in the URL.";
-        return;
-      }
-
-      try {
-        const obj = JSON.parse(decodeURIComponent(raw));
-        formattedJson = JSON.stringify(obj, null, 2);
-        document.getElementById("profileDisplay").textContent = formattedJson;
-      } catch (e) {
-        document.getElementById("profileDisplay").textContent =
-          "⚠️ Failed to parse JSON: " + e.message;
-      }
-    })();
+    });
   </script>
 
 </body>
